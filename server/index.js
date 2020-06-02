@@ -1,28 +1,58 @@
 const { ApolloServer, gql } = require("apollo-server");
+const { saveToCloud, getCloudFilesData } = require("./service");
+
+const FILES = [];
+
+getCloudFilesData()
+  .then((files) => {
+    FILES.push(...files);
+    console.log("FILES RESTORED");
+  })
+  .catch((err) => console.log("CAN'T INIT FILES:", err));
 
 const typeDefs = gql`
   type File {
     filename: String!
     mimetype: String!
-    encoding: String!
+    # encoding: String!
     publicUri: String!
+    width: Int
+    height: Int
+    size: String
+    extension: String
   }
 
   type Query {
-    uploads: [File]
+    uploads: [File!]
   }
 
   type Mutation {
-    uploadFiles(file: [Upload!]!): Boolean!
+    uploadFiles(files: [Upload!]!): [File!]
   }
 `;
 
 const resolvers = {
   Query: {
-    uploads() {},
+    uploads() {
+      return FILES;
+    },
   },
   Mutation: {
-    uploadFiles() {},
+    async uploadFiles(_, { files }) {
+      console.log("PROCESSING FILES");
+      const results = [];
+      try {
+        for await (const file of files) {
+          const newFile = await saveToCloud(file);
+          results.push(newFile);
+          FILES.push(newFile);
+        }
+      } catch (error) {
+        console.error("ERROR SAVING FILE TO CLOUD:", error);
+      }
+      console.log("FILES UPLOADED");
+      return results;
+    },
   },
 };
 

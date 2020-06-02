@@ -5,10 +5,14 @@
   "license": "MIT",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon -r dotenv/config index.js"
   },
   "dependencies": {
     "apollo-server": "^2.14.1",
+    "cloudinary": "^1.21.0",
     "graphql": "^15.0.0"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0"
   }
 }
